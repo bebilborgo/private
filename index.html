@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Mastro Distillatore 2.0</title>
+</head>
+<body class="bg-slate-100 text-slate-900 font-sans p-2 sm:p-6">
+
+    <div class="max-w-xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200">
+
+        <div class="bg-gradient-to-r from-amber-700 to-amber-500 p-6 text-white">
+            <h1 class="text-2xl font-bold uppercase tracking-widest text-center">Mastro Distillatore ⚗️</h1>
+            <p class="text-amber-100 text-sm text-center italic mt-1">Dalla materia prima al bicchiere</p>
+        </div>
+
+        <div class="p-6 space-y-6">
+
+            <div>
+                <label class="block text-sm font-bold text-slate-600 mb-2 uppercase">Cosa vuoi produrre?</label>
+                <select id="tipoDistillato" onchange="aggiornaRicetta()" class="w-full p-4 bg-amber-50 border-2 border-amber-200 rounded-xl focus:border-amber-500 outline-none text-lg font-medium">
+                    <option value="grappa">Grappa (Vinacce)</option>
+                    <option value="whisky">Whisky (Malto d'orzo)</option>
+                    <option value="vodka">Vodka (Patate/Cereali)</option>
+                    <option value="rum">Rum (Melassa/Zucchero)</option>
+                </select>
+            </div>
+
+            <div id="boxIngredienti" class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <h3 class="font-bold text-amber-800 mb-2 underline">Ingredienti Classici:</h3>
+                <ul id="listaIngredienti" class="text-sm space-y-1 list-disc list-inside text-slate-600">
+                    </ul>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase">Volume in Caldaia (L)</label>
+                    <input type="number" id="volume" value="10" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase">Grado Fermentato (%)</label>
+                    <input type="number" id="grado" value="12" class="w-full p-3 bg-gray-50 border rounded-lg outline-none focus:border-amber-500">
+                </div>
+            </div>
+
+            <button onclick="calcolaTutto()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-slate-700 transition-all uppercase tracking-widest">
+                Genera Guida Lavorazione
+            </button>
+
+            <div id="risultati" class="hidden space-y-6">
+
+                <div class="border-t pt-4">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 tracking-tight">Piano di Taglio e Temperature</h3>
+
+                    <div class="space-y-3">
+                        <div class="flex flex-col p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-red-800">1. TESTA (Scarto)</span>
+                                <span class="text-xs bg-red-200 px-2 py-1 rounded text-red-800 font-bold">70°C - 78°C</span>
+                            </div>
+                            <p class="text-2xl font-mono mt-1" id="resTesta">0 ml</p>
+                            <p class="text-[11px] text-red-700 mt-2 italic text-justify leading-tight">Elimina subito: contiene metanolo e acetati dal sapore pungente e tossici.</p>
+                        </div>
+
+                        <div class="flex flex-col p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-green-800">2. CUORE (Il Buono)</span>
+                                <span class="text-xs bg-green-200 px-2 py-1 rounded text-green-800 font-bold">78.5°C - 91°C</span>
+                            </div>
+                            <p class="text-2xl font-mono mt-1" id="resCuore">0 ml</p>
+                            <p class="text-[11px] text-green-700 mt-2 italic text-justify leading-tight">Raccogli qui il distillato nobile. Quando il vapore supera i 91°C, i profumi cambiano.</p>
+                        </div>
+
+                        <div class="flex flex-col p-4 bg-slate-100 border-l-4 border-slate-400 rounded-r-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-700">3. CODA (Scarto/Riciclo)</span>
+                                <span class="text-xs bg-slate-300 px-2 py-1 rounded text-slate-700 font-bold">> 92°C</span>
+                            </div>
+                            <p class="text-sm mt-1">Smetti di raccogliere per il consumo. Contiene oli di flemma pesanti.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                    <p class="text-amber-800 font-bold text-sm uppercase">Diluizione per il consumo (40%)</p>
+                    <p class="text-sm mt-1 text-amber-700">Per il cuore raccolto, aggiungi <span id="resAcqua" class="font-bold text-lg text-amber-900">0 ml</span> di acqua distillata.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const datiDistillati = {
+            grappa: ["Vinacce fresche o fermentate", "Acqua (se secche)", "Lieviti selezionati (opzionali)"],
+            whisky: ["Malto d'orzo macinato", "Acqua pura", "Lieviti da birra/distilleria", "Torba (opzionale)"],
+            vodka: ["Patate o Grano", "Enzimi alfa-amilasi", "Acqua", "Lievito ad alta tolleranza"],
+            rum: ["Melassa di canna o Succo di canna", "Acqua", "Lieviti specifici per Rum"]
+        };
+
+        function aggiornaRicetta() {
+            const tipo = document.getElementById('tipoDistillato').value;
+            const lista = document.getElementById('listaIngredienti');
+            lista.innerHTML = "";
+
+            datiDistillati[tipo].forEach(ing => {
+                const li = document.createElement('li');
+                li.innerText = ing;
+                lista.appendChild(li);
+            });
+        }
+
+        function calcolaTutto() {
+            const V = parseFloat(document.getElementById('volume').value);
+            const G = parseFloat(document.getElementById('grado').value);
+
+            if (!V || !G) return alert("Inserisci i dati");
+
+            const alcolPuro = V * (G / 100);
+
+            // Calcolo Teste (circa 3-5% dell'alcol puro)
+            const testa = alcolPuro * 0.05 * 1000;
+
+            // Calcolo Cuore (Resa stimata del 70% dell'alcol totale)
+            // Assumiamo che esca mediamente al 75%
+            const cuore = (alcolPuro * 0.70) / 0.75 * 1000;
+
+            // Diluizione a 40%
+            const acqua = cuore * ((75 / 40) - 1);
+
+            document.getElementById('risultati').classList.remove('hidden');
+            document.getElementById('resTesta').innerText = "~ " + Math.round(testa) + " ml";
+            document.getElementById('resCuore').innerText = "~ " + Math.round(cuore) + " ml";
+            document.getElementById('resAcqua').innerText = Math.round(acqua) + " ml";
+
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        // Inizializza prima ricetta
+        aggiornaRicetta();
+    </script>
+</body>
+</html>
